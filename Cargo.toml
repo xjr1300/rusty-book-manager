@@ -8,4 +8,5 @@ axum = { version = "0.7", features = ["macros"] }
 tokio = { version = "1.37", features = ["full"] }
 
 [dev-dependencies]
+futures = "0.3.31"
 rstest = "0.18"
