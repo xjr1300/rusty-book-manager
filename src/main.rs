@@ -18,3 +18,14 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(axum::serve(listener, app).await?)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn health_check_works() {
+        let status_code = health_check().await;
+        assert_eq!(status_code, StatusCode::OK);
+    }
+}
