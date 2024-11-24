@@ -1,82 +1,34 @@
 use std::net::{Ipv4Addr, SocketAddr};
 
-use axum::extract::State;
-use axum::http::StatusCode;
-use axum::{routing, Router};
-use sqlx::postgres::PgConnectOptions;
-use sqlx::PgPool;
+use axum::Router;
 use tokio::net::TcpListener;
 
-/// データベース接続設定
-struct DatabaseConfig {
-    pub host: String,
-    pub port: u16,
-    pub username: String,
-    pub password: String,
-    pub database: String,
-}
-
-impl From<DatabaseConfig> for PgConnectOptions {
-    fn from(cfg: DatabaseConfig) -> Self {
-        Self::new()
-            .host(&cfg.host)
-            .port(cfg.port)
-            .username(&cfg.username)
-            .password(&cfg.password)
-            .database(&cfg.database)
-    }
-}
-
-fn connect_database_with(cfg: DatabaseConfig) -> PgPool {
-    PgPool::connect_lazy_with(cfg.into())
-}
-
-/// ヘルスチェックハンドラ
-async fn health_check() -> StatusCode {
-    StatusCode::OK
-}
-
-/// データベースヘルスチェックハンドラ
-async fn health_check_db(State(db): State<PgPool>) -> StatusCode {
-    let result = sqlx::query("SELECT 1").fetch_one(&db).await;
-    match result {
-        Ok(_) => StatusCode::OK,
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
-    }
-}
+use adapter::database::connect_database_with;
+use api::route::health::build_health_check_routers;
+use registry::AppRegistry;
+use shared::config::AppConfig;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // データベース接続設定を定義
-    let database_cfg = DatabaseConfig {
-        host: "localhost".into(),
-        port: 5432,
-        username: "app".into(),
-        password: "passwd".into(),
-        database: "app".into(),
-    };
-    // データベースコネクションプールを構築
-    let conn_pool = connect_database_with(database_cfg);
+    // アプリ設定を構築
+    let app_config = AppConfig::new()?;
+    // データベースに接続
+    let pool = connect_database_with(&app_config.database);
+    // AppRegistry(DIコンテナ)を構築
+    let registry = AppRegistry::new(pool);
 
+    // ルーターを登録
     let app = Router::new()
-        .route("/health", routing::get(health_check))
-        .route("/health/db", routing::get(health_check_db))
-        .with_state(conn_pool);
+        .merge(build_health_check_routers())
+        .with_state(registry);
+
+    // サーバーを起動
     let addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), 8080);
-    let listener = TcpListener::bind(addr).await?;
+    let listener = TcpListener::bind(&addr).await?;
 
     println!("Listening on {}", addr);
 
-    Ok(axum::serve(listener, app).await?)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn health_check_works() {
-        let status_code = health_check().await;
-        assert_eq!(status_code, StatusCode::OK);
-    }
+    axum::serve(listener, app)
+        .await
+        .map_err(anyhow::Error::from)
 }

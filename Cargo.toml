@@ -8,11 +8,18 @@ name = "app"
 path = "src/bin/app.rs"
 
 [workspace]
-members = ["api", "kernel", "adapter", "shared", "registry"]
+members = ["adapter", "api", "kernel", "registry", "shared"]
 
-[dependencies]
-anyhow = "1.0.75"
+[workspace.dependencies]
+adapter = { path = "./adapter" }
+anyhow = { version = "1.0.75", features = ["backtrace"] }
+api = { path = "./api" }
+async-trait = "0.1.74"
 axum = { version = "0.7.5", features = ["macros"] }
+derive-new = "0.6.0"
+kernel = { path = "./kernel" }
+registry = { path = "./registry" }
+shared = { path = "./shared" }
 sqlx = { version = "0.7.3", features = [
   "runtime-tokio",
   "uuid",
@@ -21,10 +28,22 @@ sqlx = { version = "0.7.3", features = [
   "postgres",
   "migrate",
 ] }
+time = { version = "0.3.36", features = ["macros", "parsing", "serde"] }
 tokio = { version = "1.37.0", features = ["full"] }
 
+[dependencies]
+adapter.workspace = true
+anyhow.workspace = true
+api.workspace = true
+async-trait.workspace = true
+axum.workspace = true
+derive-new.workspace = true
+registry.workspace = true
+shared.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+
 [dev-dependencies]
-futures = "0.3.31"
-reqwest = "0.12.9"
-rstest = "0.18.2"
-time = { version = "0.3.36", features = ["macros", "parsing", "serde"] }
+futures = "0.3.31" # examples
+reqwest = "0.12.9" # examples
+rstest = "0.18.2"  # tests
