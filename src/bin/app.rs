@@ -10,6 +10,10 @@ use shared::config::AppConfig;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    bootstrap().await
+}
+
+async fn bootstrap() -> anyhow::Result<()> {
     // アプリ設定を構築
     let app_config = AppConfig::new()?;
     // データベースに接続
