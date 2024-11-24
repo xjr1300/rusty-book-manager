@@ -4,9 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0"
-axum = { version = "0.7", features = ["macros"] }
-tokio = { version = "1.37", features = ["full"] }
+anyhow = "1.0.75"
+axum = { version = "0.7.5", features = ["macros"] }
+sqlx = { version = "0.7.3", features = [
+  "runtime-tokio",
+  "uuid",
+  "time",
+  "macros",
+  "postgres",
+  "migrate",
+] }
+tokio = { version = "1.37.0", features = ["full"] }
 
 [dev-dependencies]
 futures = "0.3.31"
