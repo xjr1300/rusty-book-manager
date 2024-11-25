@@ -27,6 +27,7 @@ axum = { version = "0.7.5", features = ["macros"] }
 derive-new = "0.6.0"
 kernel = { path = "./kernel" }
 registry = { path = "./registry" }
+serde = { version = "1.0.174", features = ["derive"] }
 shared = { path = "./shared" }
 sqlx = { version = "0.7.3", features = [
   "runtime-tokio",
@@ -36,7 +37,9 @@ sqlx = { version = "0.7.3", features = [
   "postgres",
   "migrate",
 ] }
+thiserror = "1.0.44"
 tokio = { version = "1.37.0", features = ["full"] }
+uuid = { version = "1.4.0", features = ["v4", "serde"] }
 
 [dependencies]
 adapter.workspace = true

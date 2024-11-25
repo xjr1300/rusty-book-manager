@@ -4,6 +4,7 @@ use axum::Router;
 use tokio::net::TcpListener;
 
 use adapter::database::connect_database_with;
+use api::route::book::build_book_routers;
 use api::route::health::build_health_check_routers;
 use registry::AppRegistry;
 use shared::config::AppConfig;
@@ -24,6 +25,7 @@ async fn bootstrap() -> anyhow::Result<()> {
     // ルーターを登録
     let app = Router::new()
         .merge(build_health_check_routers())
+        .merge(build_book_routers())
         .with_state(registry);
 
     // サーバーを起動
