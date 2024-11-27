@@ -24,12 +24,20 @@ anyhow = "1.0.75"
 api = { path = "./api" }
 async-trait = "0.1.74"
 axum = { version = "0.7.5", features = ["macros"] }
+axum-extra = { version = "0.9.3", features = ["typed-header"] }
+bcrypt = "0.15.0"
+chrono = { version = "0.4.26", default-features = false, features = ["serde"] }
 derive-new = "0.6.0"
+garde = { version = "0.18.0", features = ["derive", "email"] }
+itertools = "0.11.0"
 kernel = { path = "./kernel" }
+mockall = "0.11.4"
+redis = { version = "0.25.3", features = ["tokio-rustls-comp"] }
 registry = { path = "./registry" }
+secrecy = "0.8.0"
 serde = { version = "1.0.174", features = ["derive"] }
 shared = { path = "./shared" }
-sqlx = { version = "0.7.3", features = [
+sqlx = { version = "0.7.3", default-features = false, features = [
   "runtime-tokio",
   "uuid",
   "chrono",
@@ -37,8 +45,13 @@ sqlx = { version = "0.7.3", features = [
   "postgres",
   "migrate",
 ] }
+strum = { version = "0.26.2", features = ["derive"] }
 thiserror = "1.0.44"
 tokio = { version = "1.37.0", features = ["full"] }
+tokio-stream = "0.1.14"
+utoipa = { version = "4.1.0", features = ["axum_extras", "uuid", "chrono"] }
+tower = "0.4.13"
+tracing = { version = "0.1.37", features = ["log"] }
 uuid = { version = "1.4.0", features = ["v4", "serde"] }
 
 [dependencies]
@@ -48,13 +61,24 @@ api.workspace = true
 async-trait.workspace = true
 axum.workspace = true
 derive-new.workspace = true
+opentelemetry = "0.21.0"
+opentelemetry-jaeger = { version = "0.20.0", features = ["rt-tokio"] }
 registry.workspace = true
 shared.workspace = true
 sqlx.workspace = true
 tokio.workspace = true
+tower-http = { version = "0.5.0", features = ["cors", "trace"] }
+tracing.workspace = true
+tracing-opentelemetry = "0.22.0"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
+utoipa.workspace = true
+utoipa-redoc = { version = "2.0.0", features = ["axum"] }
 
 [dev-dependencies]
 futures = "0.3.31" # examples
 reqwest = "0.12.9" # examples
 rstest = "0.18.2"  # tests
 time = "0.3.36"
+
+[profile.dev.package.sqlx-macros]
+opt-level = 3

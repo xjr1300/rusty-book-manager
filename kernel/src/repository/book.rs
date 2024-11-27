@@ -1,12 +1,14 @@
 use async_trait::async_trait;
-use uuid::Uuid;
+
+use shared::error::AppResult;
 
 use crate::model::book::event::CreateBook;
 use crate::model::book::Book;
+use crate::model::id::BookId;
 
 #[async_trait]
 pub trait BookRepository: Send + Sync {
-    async fn create(&self, event: CreateBook) -> anyhow::Result<()>;
-    async fn find_all(&self) -> anyhow::Result<Vec<Book>>;
-    async fn find_by_id(&self, book_id: Uuid) -> anyhow::Result<Option<Book>>;
+    async fn create(&self, event: CreateBook) -> AppResult<()>;
+    async fn find_all(&self) -> AppResult<Vec<Book>>;
+    async fn find_by_id(&self, book_id: BookId) -> AppResult<Option<Book>>;
 }
