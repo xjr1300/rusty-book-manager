@@ -1,4 +1,5 @@
 use std::net::{Ipv4Addr, SocketAddr};
+use std::sync::Arc;
 
 use anyhow::Context;
 use axum::Router;
@@ -10,8 +11,8 @@ use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
 
 use adapter::database::connect_database_with;
-use api::route::book::build_book_routers;
-use api::route::health::build_health_check_routers;
+use adapter::redis::RedisClient;
+use api::route::{auth, v1};
 use registry::AppRegistry;
 use shared::config::AppConfig;
 use shared::env::{which, Environment};
@@ -51,13 +52,14 @@ async fn bootstrap() -> anyhow::Result<()> {
     let app_config = AppConfig::new()?;
     // データベースに接続
     let pool = connect_database_with(&app_config.database);
+    let kv = Arc::new(RedisClient::new(&app_config.redis)?);
     // AppRegistry(DIコンテナ)を構築
-    let registry = AppRegistry::new(pool);
+    let registry = AppRegistry::new(pool, kv, app_config);
 
     // ルーターを登録
     let app = Router::new()
-        .merge(build_health_check_routers())
-        .merge(build_book_routers())
+        .merge(auth::build_auth_routes())
+        .merge(v1::routers())
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(tracing::Level::INFO))
