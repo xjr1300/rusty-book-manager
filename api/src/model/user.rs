@@ -32,6 +32,22 @@ impl From<RoleName> for Role {
     }
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BookOwner {
+    pub id: UserId,
+    pub name: String,
+}
+
+impl From<kernel::model::user::BookOwner> for BookOwner {
+    fn from(value: kernel::model::user::BookOwner) -> Self {
+        Self {
+            id: value.id,
+            name: value.name,
+        }
+    }
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UsersResponse {
