@@ -1,3 +1,4 @@
+pub mod checkout;
 pub mod model;
 
 use sqlx::postgres::PgConnectOptions;

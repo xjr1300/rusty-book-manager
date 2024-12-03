@@ -9,6 +9,7 @@ use registry::AppRegistry;
 use shared::error::{AppError, AppResult};
 
 use crate::extractor::AuthorizedUser;
+use crate::model::checkout::CheckoutsResponse;
 use crate::model::user::{
     CreateUserRequest, UpdateUserPasswordRequest, UpdateUserPasswordRequestWithUserId,
     UpdateUserRoleRequest, UpdateUserRoleRequestWithUserId, UserResponse, UsersResponse,
@@ -105,4 +106,16 @@ pub async fn delete_user(
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn get_checkouts(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+) -> AppResult<Json<CheckoutsResponse>> {
+    registry
+        .checkout_repository()
+        .find_unreturned_by_user_id(user.id())
+        .await
+        .map(CheckoutsResponse::from)
+        .map(Json)
 }

@@ -52,3 +52,32 @@ CREATE TABLE IF NOT EXISTS books (
 CREATE TRIGGER books_updated_at_trigger
     BEFORE UPDATE ON books FOR EACH ROW
     EXECUTE PROCEDURE set_updated_at();
+
+-- 蔵書貸出テーブル
+CREATE TABLE IF NOT EXISTS checkouts (
+    checkout_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    book_id UUID NOT NULL UNIQUE,
+    user_id UUID NOT NULL,
+    checked_out_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    CONSTRAINT fk_checkouts_book_id__books_book_id FOREIGN KEY (book_id) REFERENCES books (book_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_checkouts_user_id__users_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- 蔵書貸出／返却履歴テーブル
+CREATE TABLE IF NOT EXISTS returned_checkouts (
+    checkout_id UUID PRIMARY KEY,
+    book_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    checked_out_at TIMESTAMP(3) WITH TIME ZONE NOT NULL,
+    returned_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    CONSTRAINT fk_returned_checkouts_book_id__books_book_id FOREIGN KEY (book_id) REFERENCES books (book_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_returned_checkouts_user_id__users_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+)
