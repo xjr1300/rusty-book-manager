@@ -1,20 +1,50 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 use derive_new::new;
 
 use kernel::model::book::event::{CreateBook, DeleteBook, UpdateBook};
-use kernel::model::book::Book;
 use kernel::model::book::BookListOptions;
+use kernel::model::book::{Book, Checkout};
 use kernel::model::id::{BookId, UserId};
 use kernel::model::list::PaginatedList;
 use kernel::repository::book::BookRepository;
 use shared::error::{AppError, AppResult};
 
-use crate::database::model::book::{BookRow, PaginatedBookRow};
+use crate::database::model::book::{BookCheckoutRow, BookRow, PaginatedBookRow};
 use crate::database::ConnectionPool;
 
 #[derive(new)]
 pub struct BookRepositoryImpl {
     db: ConnectionPool,
+}
+
+impl BookRepositoryImpl {
+    async fn find_checkouts(&self, book_ids: &[BookId]) -> AppResult<HashMap<BookId, Checkout>> {
+        let results = sqlx::query_as!(
+            BookCheckoutRow,
+            r#"
+                SELECT
+                    c.checkout_id,
+                    c.book_id,
+                    u.user_id,
+                    u.name user_name,
+                    c.checked_out_at
+                FROM
+                    checkouts c
+                INNER JOIN users u ON c.user_id = u.user_id
+                WHERE c.book_id = ANY($1)
+            "#,
+            book_ids as _
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?
+        .into_iter()
+        .map(|checkout| (checkout.book_id, Checkout::from(checkout)))
+        .collect();
+        Ok(results)
+    }
 }
 
 #[async_trait]
@@ -66,6 +96,7 @@ impl BookRepository for BookRepositoryImpl {
         // 行が得られなかった場合は`i64`のデフォルト値、つまり0を`total`に割り当てる。
         let total = rows.first().map(|r| r.total).unwrap_or_default();
         let book_ids = rows.into_iter().map(|r| r.id).collect::<Vec<BookId>>();
+        let mut checkouts = self.find_checkouts(&book_ids).await?;
 
         // UNNEST: 配列を行集合に展開する。
         // $1::uuid[]: クエリパラメーター$1をuuidの配列と認識させる。
@@ -96,7 +127,13 @@ impl BookRepository for BookRepositoryImpl {
         .await
         .map_err(AppError::SpecificOperationError)?;
 
-        let items = rows.into_iter().map(Book::from).collect();
+        let items = rows
+            .into_iter()
+            .map(|row| {
+                let checkout = checkouts.remove(&row.book_id);
+                row.into_book(checkout)
+            })
+            .collect();
 
         Ok(PaginatedList {
             total,
@@ -124,7 +161,13 @@ impl BookRepository for BookRepositoryImpl {
         .await
         .map_err(AppError::SpecificOperationError)?;
 
-        Ok(row.map(Book::from))
+        match row {
+            Some(r) => {
+                let checkout = self.find_checkouts(&[r.book_id]).await?.remove(&r.book_id);
+                Ok(Some(r.into_book(checkout)))
+            }
+            None => Ok(None),
+        }
     }
 
     async fn update(&self, event: UpdateBook) -> AppResult<()> {
@@ -240,6 +283,7 @@ mod tests {
             isbn,
             description,
             owner,
+            ..
         } = book.unwrap();
         assert_eq!(id, book_id);
         assert_eq!(title, "Test Title");

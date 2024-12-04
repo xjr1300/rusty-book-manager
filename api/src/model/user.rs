@@ -135,3 +135,18 @@ impl From<UpdateUserRoleRequestWithUserId> for UpdateUserRole {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct CheckoutUser {
+    pub id: UserId,
+    pub name: String,
+}
+
+impl From<kernel::model::user::CheckoutUser> for CheckoutUser {
+    fn from(value: kernel::model::user::CheckoutUser) -> Self {
+        Self {
+            id: value.id,
+            name: value.name,
+        }
+    }
+}

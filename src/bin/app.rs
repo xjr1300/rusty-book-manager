@@ -2,8 +2,10 @@ use std::net::{Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 
 use anyhow::Context;
+use axum::http::Method;
 use axum::Router;
 use tokio::net::TcpListener;
+use tower_http::cors::{self, CorsLayer};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
 use tower_http::LatencyUnit;
 use tracing_subscriber::layer::SubscriberExt;
@@ -47,6 +49,13 @@ fn init_logger() -> anyhow::Result<()> {
     Ok(())
 }
 
+fn cors() -> CorsLayer {
+    CorsLayer::new()
+        .allow_headers(cors::Any)
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+        .allow_origin(cors::Any)
+}
+
 async fn bootstrap() -> anyhow::Result<()> {
     // アプリ設定を構築
     let app_config = AppConfig::new()?;
@@ -70,6 +79,7 @@ async fn bootstrap() -> anyhow::Result<()> {
                         .latency_unit(LatencyUnit::Millis),
                 ),
         )
+        .layer(cors())
         .with_state(registry);
 
     // サーバーを起動
@@ -80,7 +90,7 @@ async fn bootstrap() -> anyhow::Result<()> {
 
     axum::serve(listener, app)
         .await
-        .context("Unexpected error happened n server")
+        .context("Unexpected error happened in server")
         .inspect_err(
             |e| tracing::error!(error.cause_chain = ?e, error_message = %e, "Unexpected error"),
         )
