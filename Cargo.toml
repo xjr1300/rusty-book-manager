@@ -10,13 +10,20 @@ name = "app"
 path = "src/bin/app.rs"
 
 [workspace]
-members = ["adapter", "api", "kernel", "registry", "shared"]
+members = [
+  "adapter",
+  "api",
+  "kernel",
+  "registry",
+  "rstest-example",
+  "shared",
+  "sqlx-test-example",
+]
 
 [workspace.package]
 edition = "2021"
 publish = false
 license = "MIT"
-
 
 [workspace.dependencies]
 adapter = { path = "./adapter" }
@@ -50,7 +57,7 @@ thiserror = "1.0.44"
 tokio = { version = "1.37.0", features = ["full"] }
 tokio-stream = "0.1.14"
 utoipa = { version = "4.1.0", features = ["axum_extras", "uuid", "chrono"] }
-tower = "0.4.13"
+tower = { version = "0.4.13", features = ["util"] }
 tracing = { version = "0.1.37", features = ["log"] }
 uuid = { version = "1.4.0", features = ["v4", "serde"] }
 

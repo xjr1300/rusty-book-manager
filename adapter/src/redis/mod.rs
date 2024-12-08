@@ -17,7 +17,6 @@ impl RedisClient {
         Ok(Self { client })
     }
 
-    #[allow(dependency_on_unit_never_type_fallback)]
     pub async fn set_ex<T: RedisKey>(&self, key: &T, value: &T::Value, ttl: u64) -> AppResult<()> {
         let mut conn = self.client.get_multiplexed_async_connection().await?;
         conn.set_ex(key.inner(), value.inner(), ttl).await?;
@@ -30,7 +29,6 @@ impl RedisClient {
         result.map(T::Value::try_from).transpose()
     }
 
-    #[allow(dependency_on_unit_never_type_fallback)]
     pub async fn delete<T: RedisKey>(&self, key: &T) -> AppResult<()> {
         let mut conn = self.client.get_multiplexed_async_connection().await?;
         conn.del(key.inner()).await?;

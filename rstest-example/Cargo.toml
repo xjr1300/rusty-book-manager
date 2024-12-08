@@ -1,0 +1,12 @@
+[package]
+name = "rstest-example"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+license.workspace = true
+
+[dependencies]
+mockall.workspace = true
+
+[dev-dependencies]
+rstest = "0.23.0"

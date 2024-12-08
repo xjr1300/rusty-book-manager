@@ -15,7 +15,7 @@ use tracing_subscriber::EnvFilter;
 use adapter::database::connect_database_with;
 use adapter::redis::RedisClient;
 use api::route::{auth, v1};
-use registry::AppRegistry;
+use registry::AppRegistryImpl;
 use shared::config::AppConfig;
 use shared::env::{which, Environment};
 
@@ -63,7 +63,7 @@ async fn bootstrap() -> anyhow::Result<()> {
     let pool = connect_database_with(&app_config.database);
     let kv = Arc::new(RedisClient::new(&app_config.redis)?);
     // AppRegistry(DIコンテナ)を構築
-    let registry = AppRegistry::new(pool, kv, app_config);
+    let registry = Arc::new(AppRegistryImpl::new(pool, kv, app_config));
 
     // ルーターを登録
     let app = Router::new()

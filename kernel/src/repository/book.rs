@@ -9,6 +9,7 @@ use crate::model::id::{BookId, UserId};
 use crate::model::list::PaginatedList;
 
 #[async_trait]
+#[mockall::automock]
 pub trait BookRepository: Send + Sync {
     async fn find_all(&self, options: BookListOptions) -> AppResult<PaginatedList<Book>>;
     async fn find_by_id(&self, book_id: BookId) -> AppResult<Option<Book>>;

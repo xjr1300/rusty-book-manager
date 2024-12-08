@@ -7,6 +7,7 @@ use crate::model::auth::AccessToken;
 use crate::model::id::UserId;
 
 #[async_trait]
+#[mockall::automock]
 pub trait AuthRepository: Send + Sync {
     async fn fetch_user_id_from_token(
         &self,

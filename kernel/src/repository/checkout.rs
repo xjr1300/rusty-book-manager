@@ -7,6 +7,7 @@ use crate::model::checkout::Checkout;
 use crate::model::id::{BookId, UserId};
 
 #[async_trait]
+#[mockall::automock]
 pub trait CheckoutRepository: Send + Sync {
     /// 蔵書を貸出する。
     async fn create(&self, event: CreateCheckout) -> AppResult<()>;

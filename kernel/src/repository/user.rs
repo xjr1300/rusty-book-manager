@@ -7,6 +7,7 @@ use crate::model::user::event::{CreateUser, DeleteUser, UpdateUserPassword, Upda
 use crate::model::user::User;
 
 #[async_trait]
+#[mockall::automock]
 pub trait UserRepository: Send + Sync {
     async fn find_current_user(&self, current_user_id: UserId) -> AppResult<Option<User>>;
     async fn find_all(&self) -> AppResult<Vec<User>>;
