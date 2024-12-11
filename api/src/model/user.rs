@@ -2,6 +2,8 @@ use derive_new::new;
 use garde::Validate;
 use serde::{Deserialize, Serialize};
 use strum::VariantNames;
+#[cfg(debug_assertions)]
+use utoipa::ToSchema;
 
 use kernel::model::id::UserId;
 use kernel::model::role::Role;
@@ -9,6 +11,8 @@ use kernel::model::user::event::{CreateUser, UpdateUserPassword, UpdateUserRole}
 use kernel::model::user::User;
 
 #[derive(Deserialize, Serialize, VariantNames)]
+#[strum(serialize_all = "kebab-case")]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 pub enum RoleName {
     Admin,
     User,
@@ -33,6 +37,7 @@ impl From<RoleName> for Role {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct BookOwner {
     pub id: UserId,
@@ -49,12 +54,14 @@ impl From<kernel::model::user::BookOwner> for BookOwner {
 }
 
 #[derive(Serialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct UsersResponse {
     pub users: Vec<UserResponse>,
 }
 
 #[derive(Serialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct UserResponse {
     pub id: UserId,
@@ -76,6 +83,7 @@ impl From<User> for UserResponse {
 
 /// パスワード変更時にハンドラーで受け取るデータの型
 #[derive(Deserialize, Validate)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateUserPasswordRequest {
     #[garde(length(min = 1))]
@@ -98,6 +106,7 @@ impl From<UpdateUserPasswordRequestWithUserId> for UpdateUserPassword {
 }
 
 #[derive(Deserialize, Validate)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct CreateUserRequest {
     #[garde(length(min = 1))]
@@ -119,6 +128,7 @@ impl From<CreateUserRequest> for CreateUser {
 }
 
 #[derive(Deserialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateUserRoleRequest {
     role: RoleName,
@@ -137,6 +147,7 @@ impl From<UpdateUserRoleRequestWithUserId> for UpdateUserRole {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 pub struct CheckoutUser {
     pub id: UserId,
     pub name: String,

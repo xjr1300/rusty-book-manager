@@ -1,10 +1,13 @@
 use chrono::{DateTime, Utc};
 use serde::Serialize;
+#[cfg(debug_assertions)]
+use utoipa::ToSchema;
 
 use kernel::model::checkout::{Checkout, CheckoutBook};
 use kernel::model::id::{BookId, CheckoutId, UserId};
 
 #[derive(Serialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct CheckoutBookResponse {
     pub id: BookId,
@@ -31,6 +34,7 @@ impl From<CheckoutBook> for CheckoutBookResponse {
 }
 
 #[derive(Serialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct CheckoutResponse {
     pub id: CheckoutId,
@@ -60,6 +64,7 @@ impl From<Checkout> for CheckoutResponse {
 }
 
 #[derive(Serialize)]
+#[cfg_attr(debug_assertions, derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct CheckoutsResponse {
     pub items: Vec<CheckoutResponse>,
